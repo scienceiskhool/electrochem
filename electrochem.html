@@ -14,6 +14,8 @@
             --error: #dc3545;
             --hint-bg: #fff9db;
             --hint-border: #fab005;
+            --timer-bg: #e9ecef;
+            --multiplier-color: #fd7e14;
         }
 
         body { 
@@ -32,29 +34,48 @@
             max-width: 1000px;
             width: 100%;
             text-align: center;
+            position: relative;
         }
 
         h2#mainHeader { margin-top: 0; color: #222; line-height: 1.4; }
-        .credits { font-size: 0.9rem; color: #666; margin-top: 5px; display: block; font-weight: normal; }
-
-        .splash-img {
+        
+        .preview-container {
             width: 100%;
-            max-width: 600px;
+            background: #e2e8f0;
             border-radius: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            max-height: 450px;
         }
 
-        .top-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
+        .preview-img {
+            max-width: 100%;
+            max-height: 450px;
+            height: auto;
+            object-fit: contain;
+            display: block;
         }
-        
+
+        .timer-container {
+            width: 100%;
+            height: 10px;
+            background: var(--timer-bg);
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            display: none;
+        }
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--accent);
+            transition: width 0.1s linear;
+        }
+
         .stats-bar {
             display: none;
             justify-content: space-between;
@@ -66,26 +87,58 @@
             font-weight: bold;
         }
 
-        .audio-controls {
+        .multiplier-badge {
+            background: var(--multiplier-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: none;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        .floating-score {
+            position: absolute;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+
+        .top-nav {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.8rem;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
         }
 
-        .input-group { display: flex; gap: 8px; }
-        input#manualInput {
-            padding: 10px; border: 2px solid #ddd; border-radius: 8px;
-            width: 80px; text-align: center; font-weight: bold; text-transform: uppercase;
+        .btn-speed { 
+            background: var(--accent); 
+            color: white; 
+            animation: pulse 2s infinite;
+            display: none; 
         }
 
-        button {
-            padding: 12px 20px; border-radius: 8px; border: none;
-            cursor: pointer; font-weight: bold; transition: 0.2s;
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(214, 51, 132, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(214, 51, 132, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(214, 51, 132, 0); }
         }
-        .btn-lookup { background: var(--secondary); color: white; }
-        .btn-challenge { background: var(--primary); color: white; font-size: 1.1rem; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
 
         .game-layout { display: none; flex-direction: column; gap: 30px; text-align: left; }
         @media (min-width: 768px) {
@@ -93,418 +146,529 @@
             .left-panel, .right-panel { flex: 1; }
         }
 
-        .image-stack { display: flex; flex-direction: column; gap: 10px; align-items: center; }
         .cell-img { width: 100%; max-width: 380px; border-radius: 10px; border: 1px solid #ddd; background: #fafafa; min-height: 150px; }
 
         .step {
-            margin-bottom: 15px; padding: 15px; border-radius: 12px;
+            margin-bottom: 12px; padding: 12px; border-radius: 12px;
             display: none; background: #fafafa; border: 1px solid #eee;
-        }
-        .step-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .q-text { font-weight: bold; color: #333; }
-        
-        .hint-btn {
-            background: #eee; color: #555; font-size: 0.75rem; padding: 4px 8px;
-            border-radius: 4px; display: flex; align-items: center; gap: 4px;
-        }
-        .hint-btn:hover { background: #e0e0e0; }
-        .hint-box {
-            display: none; background: var(--hint-bg); border: 1px solid var(--hint-border);
-            padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem;
-            color: #856404; line-height: 1.4;
         }
 
         .btn-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
-        
         button.choice {
             background: white; border: 2px solid var(--primary); color: var(--primary);
-            padding: 12px; border-radius: 8px; cursor: pointer; text-align: left;
-            transition: all 0.2s;
+            padding: 10px; border-radius: 8px; cursor: pointer; text-align: left;
+            transition: all 0.2s; font-size: 0.95rem;
         }
         button.choice:hover { background: #f0f7ff; }
+        button.choice.confirmed {
+            background: var(--success); color: white; border-color: var(--success);
+            pointer-events: none;
+        }
 
-        .feedback { margin-top: 10px; padding: 12px; border-radius: 6px; font-weight: 500; display: none; line-height: 1.4; }
+        .feedback { margin-top: 10px; padding: 8px; border-radius: 6px; font-weight: 500; display: none; font-size: 0.85rem; }
         .correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .wrong { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
 
-        #finalScreen {
-            display: none; text-align: left; padding: 25px;
-            background: #fff; border: 2px solid var(--primary); border-radius: 15px;
+        .hint-display {
+            margin-top: 10px; padding: 10px; border-radius: 8px;
+            background: var(--hint-bg); border: 1px solid var(--hint-border);
+            color: #856404; font-size: 0.85rem; display: none;
+            animation: fadeIn 0.3s ease;
         }
 
-        .gen-question {
-            background: #f8f9fa; padding: 15px; border-radius: 10px;
-            margin-bottom: 15px; border-left: 5px solid #ddd;
-        }
-        .gen-question.active { border-left-color: var(--primary); background: #f0f7ff; }
-        .gen-question.passed { border-left-color: var(--success); background: #f1fbf3; }
-        
-        .gen-options { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .gen-btn { 
-            text-align: left; padding: 10px; border: 1px solid #ccc; 
-            border-radius: 5px; background: white; font-size: 0.95rem;
-        }
-        .gen-btn:hover:not(:disabled) { background: #eee; }
-        .gen-btn.correct-choice { background: var(--success) !important; color: white; border-color: var(--success); }
-        .gen-btn.wrong-choice { background: var(--error) !important; color: white; border-color: var(--error); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .mute-btn {
-            background: #ccc;
+        .hint-btn {
+            background: none;
+            border: 1px dashed var(--secondary);
+            color: var(--secondary);
+            font-size: 0.8rem;
+            margin-top: 10px;
             padding: 5px 10px;
+            cursor: pointer;
             border-radius: 5px;
-            font-size: 0.7rem;
-            color: #333;
         }
+        .hint-btn:hover { background: #eee; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none; align-items: center;
+            justify-content: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 15px; max-width: 500px;
+            width: 90%; text-align: center;
+        }
+        .modal-content h3 { color: var(--error); margin-top: 0; }
+        .modal-hint { background: var(--hint-bg); border: 1px solid var(--hint-border); padding: 15px; border-radius: 8px; text-align: left; margin: 15px 0; font-size: 0.95rem; color: #856404; }
+
+        button { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-lookup { background: var(--secondary); color: white; }
+        .btn-back { background: #e2e8f0; color: #475569; margin-top: 10px; }
+
+        .referee-panel { background: #f8fafc; border: 2px solid var(--secondary); border-radius: 15px; padding: 20px; }
+        .referee-label { font-weight: bold; color: var(--secondary); text-transform: uppercase; font-size: 0.75rem; margin-bottom: 5px; display: block; }
+        .referee-val { font-size: 1.1rem; color: #1e293b; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="main-wrapper">
-    <h2 id="mainHeader">Electrochemistry Assistant</h2>
+<div class="main-wrapper" id="mainWrapper">
+    <h2 id="mainHeader">Electrochemistry Challenge</h2>
     
-    <!-- Home/Start Screen -->
     <div id="startScreen">
-        <!-- Using provided design as splash -->
-        <img src="https://lh3.googleusercontent.com/u/0/d/1yLie3QUv4BPaF-9EvBpooHq0FqI6tUrq" class="splash-img" alt="Electrochemistry Card Game Design">
-        <p>Ready to test your skills? Start the challenge or use Referee Mode.</p>
+        <div class="preview-container">
+            <img id="startPreview" class="preview-img" src="https://lh3.googleusercontent.com/u/0/d/1yLie3QUv4BPaF-9EvBpooHq0FqI6tUrq" alt="Lab Setup" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <p style="color: #64748b; font-weight: bold; display:none;">[ Lab Setup Preview ]</p>
+        </div>
+        <p id="unlockMsg">Complete the 5-Question Challenge or the 1-Minute Speed Run!</p>
     </div>
 
-    <!-- Stats Bar -->
+    <div class="timer-container" id="timerContainer"><div class="timer-bar" id="timerBar"></div></div>
+
     <div class="stats-bar" id="statsBar">
-        <span id="progressText">Question 1 of 5</span>
-        <div class="audio-controls">
+        <span id="progressText">Question 1</span>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span id="multiplierBadge" class="multiplier-badge">x1</span>
             <span id="scoreText">Score: 0</span>
-            <button class="mute-btn" id="muteToggle" onclick="toggleMute()">🎵 Mute</button>
+            <button id="muteToggle" onclick="toggleMute()" style="background:none; border:1px solid #ccc; font-size:0.7rem; padding:4px 8px;">🎵 Audio: ON</button>
         </div>
     </div>
 
-    <!-- Navigation -->
     <div class="top-nav" id="topNav">
-        <button class="btn-challenge" onclick="startChallenge()">🚀 Start 5-Question Challenge</button>
-        <div class="input-group">
-            <input type="text" id="manualInput" maxlength="3" placeholder="CODE">
-            <button class="btn-lookup" onclick="handleLookup()">Referee Mode</button>
+        <button class="btn-primary" onclick="startChallenge('normal')">🚀 Start 5-Question Challenge</button>
+        <button id="speedRunBtn" class="btn-speed" onclick="startChallenge('speed')">⚡ 1-Minute Speed Run</button>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="manualInput" maxlength="3" placeholder="CODE" style="width:60px; text-align:center; border-radius:8px; border:1px solid #ddd;">
+            <button class="btn-lookup" onclick="handleLookup()">Referee</button>
         </div>
     </div>
 
     <div id="gameUI" class="game-layout">
         <div class="left-panel">
-            <div class="image-stack">
-                <img id="imgTop" class="cell-img" alt="Top Card">
-                <img id="imgMid" class="cell-img" alt="Middle Card">
-                <img id="imgBot" class="cell-img" alt="Bottom Card">
+            <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <img id="imgTop" class="cell-img" alt="Top">
+                <img id="imgMid" class="cell-img" alt="Mid">
+                <img id="imgBot" class="cell-img" alt="Bot">
             </div>
         </div>
 
         <div class="right-panel">
-            <!-- Questions Area -->
             <div id="quizView">
                 <div id="step1" class="step" style="display:block;">
-                    <div class="step-header">
-                        <span class="q-text">1. Identify the Cell Type:</span>
-                        <button class="hint-btn" onclick="toggleHint(1)">💡 Hint</button>
+                    <p class="q-text"><strong>1. Identify Cell Type:</strong></p>
+                    <div class="btn-grid" id="typeOptions">
+                        <button class="choice" onclick="check(1, 'Galvanic', event)">Galvanic (Simple Cell)</button>
+                        <button class="choice" onclick="check(1, 'Electrolytic', event)">Electrolytic (Battery)</button>
                     </div>
-                    <div id="hint1" class="hint-box"><strong>Generalisation 1:</strong> An electrolytic cell is driven by electricity (external source), while a galvanic (simple) cell produces current based on the difference in reactivity.</div>
-                    <div class="btn-grid">
-                        <button class="choice" onclick="check(1, 'Galvanic')">Galvanic (Simple Cell - Voltmeter)</button>
-                        <button class="choice" onclick="check(1, 'Electrolytic')">Electrolytic (Battery)</button>
-                    </div>
+                    <button id="btnHint1" class="hint-btn" onclick="showHint(1)">💡 Show Hint</button>
+                    <div id="hintText1" class="hint-display"></div>
                     <div id="feed1" class="feedback"></div>
                 </div>
-
                 <div id="step2" class="step">
-                    <div class="step-header">
-                        <span class="q-text">2. Select the CATHODE reaction:</span>
-                        <button class="hint-btn" onclick="toggleHint(2)">💡 Hint</button>
-                    </div>
-                    <div id="hint2" class="hint-box"><strong>Generalisation 2:</strong> To determine cathode products, consider cations present. The least reactive cation is discharged.</div>
+                    <p class="q-text"><strong>2. Cathode Reaction:</strong></p>
                     <div class="btn-grid" id="cathodeOptions"></div>
+                    <button id="btnHint2" class="hint-btn" onclick="showHint(2)">💡 Show Hint</button>
+                    <div id="hintText2" class="hint-display"></div>
                     <div id="feed2" class="feedback"></div>
                 </div>
-
                 <div id="step3" class="step">
-                    <div class="step-header">
-                        <span class="q-text">3. Select the ANODE reaction:</span>
-                        <button class="hint-btn" onclick="toggleHint(3)">💡 Hint</button>
-                    </div>
-                    <div id="hint3" class="hint-box"><strong>Generalisation 3:</strong> At the anode, consider (i) if the electrode is reactive metal. If not, (ii) consider high-concentration halides.</div>
+                    <p class="q-text"><strong>3. Anode Reaction:</strong></p>
                     <div class="btn-grid" id="anodeOptions"></div>
+                    <button id="btnHint3" class="hint-btn" onclick="showHint(3)">💡 Show Hint</button>
+                    <div id="hintText3" class="hint-display"></div>
                     <div id="feed3" class="feedback"></div>
                 </div>
             </div>
 
-            <!-- Referee/Lookup Area -->
-            <div id="lookupView" style="display:none; padding: 20px; background: #f8f9ff; border-radius: 15px; border-left: 6px solid var(--primary);">
-                <h3 style="margin-top:0">Referee Details</h3>
-                <p><strong>Type:</strong> <span id="keyType"></span></p>
-                <p><strong>Cathode:</strong> <span id="keyCathode" style="color:var(--primary)"></span></p>
-                <p><strong>Anode:</strong> <span id="keyAnode" style="color:var(--accent)"></span></p>
-                <button style="margin-top:20px; background:var(--secondary); color:white; width:100%" onclick="resetApp()">Return to Menu</button>
+            <div id="refereeView" style="display:none;" class="referee-panel">
+                <span class="referee-label">Cell Type</span>
+                <div id="refType" class="referee-val"></div>
+                
+                <span class="referee-label">Cathode Reaction</span>
+                <div id="refCathode" class="referee-val"></div>
+                
+                <span class="referee-label">Anode Reaction</span>
+                <div id="refAnode" class="referee-val" style="border:none;"></div>
+
+                <div style="margin-top:30px; padding-top:20px; border-top:1px solid #ddd; display:flex; flex-direction:column; gap:10px;">
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="refInput" maxlength="3" placeholder="CODE" style="flex:1; padding:12px; border-radius:8px; border:1px solid #ddd; text-align:center;">
+                        <button class="btn-lookup" onclick="const c = document.getElementById('refInput').value; if(c) handleLookup(c)">Verify</button>
+                    </div>
+                    <button class="btn-back" onclick="resetToMenu()">Back to Home</button>
+                </div>
             </div>
 
-            <!-- Results Area -->
-            <div id="finalScreen">
-                <h2 style="color:var(--primary); margin-top:0;">Challenge Results</h2>
-                <p id="finalScoreDisplay" style="font-size:1.2rem; font-weight:bold; margin-bottom: 20px;"></p>
-                
-                <div id="generalizationQuiz">
-                    <h3 style="border-bottom: 2px solid #eee; padding-bottom: 5px;">Consolidate your Knowledge</h3>
-                    <div class="gen-question active" id="gen1">
-                        <p><strong>Generalisation 1:</strong> Which statement correctly describes the difference between the two cell types?</p>
-                        <div class="gen-options">
-                            <button class="gen-btn" onclick="checkGen(1, true, this)">Electrolytic cells are driven by electricity, while galvanic cells depend on metal reactivity.</button>
-                            <button class="gen-btn" onclick="checkGen(1, false, this)">Both cells are driven by external power supplies to force reactions.</button>
-                        </div>
-                    </div>
-                    <div class="gen-question" id="gen2" style="display:none;">
-                        <p><strong>Generalisation 2:</strong> To determine what happens at the <strong>Cathode</strong>, we should consider...</p>
-                        <div class="gen-options">
-                            <button class="gen-btn" onclick="checkGen(2, false, this)">The nature of the electrode material.</button>
-                            <button class="gen-btn" onclick="checkGen(2, true, this)">The cations present in the electrolyte.</button>
-                        </div>
-                    </div>
-                    <div class="gen-question" id="gen3" style="display:none;">
-                        <p><strong>Generalisation 3:</strong> At the <strong>Anode</strong>, what should you consider first?</p>
-                        <div class="gen-options">
-                            <button class="gen-btn" onclick="checkGen(3, true, this)">(i) Reactive metal electrode, else (ii) high-concentration halides.</button>
-                            <button class="gen-btn" onclick="checkGen(3, false, this)">Always check water molecules first.</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="finishActions" style="display:none; margin-top: 20px;">
-                    <p style="color: var(--success); font-weight: bold;">🎉 Well done! You have mastered the core generalisations.</p>
-                    <button style="background:var(--primary); color:white; width:100%" onclick="resetApp()">Try Another Challenge</button>
-                    <button style="background:var(--secondary); color:white; width:100%; margin-top:10px;" onclick="resetApp()">Back to Home</button>
-                </div>
+            <div id="finalScreen" style="display:none;">
+                <h2 id="finalTitle">Challenge Complete!</h2>
+                <p id="finalScoreDisplay" style="font-size:1.5rem; font-weight:bold; color:var(--primary);"></p>
+                <div id="finalStats" style="margin-bottom: 20px; color: #666;"></div>
+                <button class="btn-primary" style="width:100%" onclick="resetToMenu()">Return to Main Menu</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Audio elements for background music -->
-<audio id="bgMusic" loop>
-    <source src="Looping Light.mp3" type="audio/mpeg">
-</audio>
+<div id="modalOverlay" class="modal-overlay">
+    <div class="modal-content">
+        <h3 id="modalTitle">Incorrect</h3>
+        <p id="modalMsg"></p>
+        <div class="modal-hint" id="modalHint"></div>
+        <button id="modalBtn" class="btn-primary" onclick="closeModal()">Next Question</button>
+    </div>
+</div>
+
+<audio id="audioNormal" loop><source src="Looping Light.mp3" type="audio/mpeg"></audio>
+<audio id="audioSpeed" loop><source src="Quiz Rush.mp3" type="audio/mpeg"></audio>
 
 <script>
     const masterData = {"X1B": ["Ag⁺(aq) + e‾ → Ag(s)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X2B": ["Ag⁺(aq) + e‾ → Ag(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X3B": ["No reaction", "No reaction"], "X4B": ["No reaction", "No reaction"], "X5B": ["Ag⁺(aq) + e‾ → Ag(s)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "X6B": ["Ag⁺(aq) + e‾ → Ag(s)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X7B": ["No reaction", "No reaction"], "X8B": ["Ag⁺(aq) + e‾ → Ag(s)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Y1B": ["Ag⁺(aq) + e‾ → Ag(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y2B": ["Ag⁺(aq) + e‾ → Ag(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y3B": ["Ag⁺(aq) + e‾ → Ag(s)", "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾"], "Y4B": ["Ag⁺(aq) + e‾ → Ag(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y5B": ["Ag⁺(aq) + e‾ → Ag(s)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "Y6B": ["Ag⁺(aq) + e‾ → Ag(s)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Y7B": ["Ag⁺(aq) + e‾ → Ag(s)", "Ag(s) → Ag⁺(aq) + e‾"], "Y8B": ["Ag⁺(aq) + e‾ → Ag(s)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z1B": ["Ag⁺(aq) + e‾ → Ag(s)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Z2B": ["Ag⁺(aq) + e‾ → Ag(s)", "Ag(s) → Ag⁺(aq) + e‾"], "Z3B": ["Ag⁺(aq) + e‾ → Ag(s)", "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾"], "Z4B": ["Ag⁺(aq) + e‾ → Ag(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Z5B": ["Ag⁺(aq) + e‾ → Ag(s)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z6B": ["Ag⁺(aq) + e‾ → Ag(s)", "Pb(s) → Pb²⁺(aq) + 2 e‾"], "Z7B": ["Ag⁺(aq) + e‾ → Ag(s)", "Ag(s) → Ag⁺(aq) + e‾"], "Z8B": ["Ag⁺(aq) + e‾ → Ag(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X1C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Zn(s) →  Zn²⁺(l) + 2 e‾"], "X2C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Cu(s) → Cu²⁺(l) + 2 e‾"], "X3C": ["No reaction", "No reaction"], "X4C": ["No reaction", "No reaction"], "X5C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Mg(s) → Mg²⁺(l) + 2 e‾"], "X6C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Zn(s) →  Zn²⁺(l) + 2 e‾"], "X7C": ["No reaction", "No reaction"], "X8C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Fe(s) → Fe²⁺(l) + 2 e‾"], "Y1C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Cu(s) → Cu²⁺(l) + 2 e‾"], "Y2C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Cu(s) → Cu²⁺(l) + 2 e‾"], "Y3C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "2 I‾(l) → I₂(l) + 2 e‾"], "Y4C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Cu(s) → Cu²⁺(l) + 2 e‾"], "Y5C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Mg(s) → Mg²⁺(l) + 2 e‾"], "Y6C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Zn(s) →  Zn²⁺(l) + 2 e‾"], "Y7C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Ag(s) → Ag⁺(l) + e‾"], "Y8C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Fe(s) → Fe²⁺(l) + 2 e‾"], "Z1C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Zn(s) →  Zn²⁺(l) + 2 e‾"], "Z2C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Ag(s) → Ag⁺(l) + e‾"], "Z3C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "2 I‾(l) → I₂(l) + 2 e‾"], "Z4C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Cu(s) → Cu²⁺(l) + 2 e‾"], "Z5C": ["Ca²⁺(aq) + 2e‾ → Ca(s)", "Fe(s) → Fe²⁺(l) + 2 e‾"], "Z6C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Pb(s) → Pb²⁺(l) + 2 e‾"], "Z7C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Ag(s) → Ag⁺(l) + e‾"], "Z8C": ["Ca²⁺(l) + 2 e‾ → Ca(l)", "Cu(s) → Cu²⁺(l) + 2 e‾"], "X1D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X2D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X3D": ["No reaction", "No reaction"], "X4D": ["No reaction", "No reaction"], "X5D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "X6D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X7D": ["No reaction", "No reaction"], "X8D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Y1D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y2D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y3D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾"], "Y4D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y5D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "Y6D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Y7D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Y8D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z1D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Z2D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z3D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾"], "Z4D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Z5D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z6D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Pb(s) → Pb²⁺(aq) + 2 e‾"], "Z7D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z8D": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X1G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X2G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X3G": ["No reaction", "No reaction"], "X4G": ["No reaction", "No reaction"], "X5G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "X6G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X7G": ["No reaction", "No reaction"], "X8G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Y1G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y2G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y3G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "2 Cl‾(l) → Cl₂(l) +2 e‾"], "Y4G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y5G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "Y6G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Y7G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Y8G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z1G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Z2G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z3G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "2 Cl‾(l) → Cl₂(l) +2 e‾"], "Z4G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Z5G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z6G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Pb(s) → Pb²⁺(aq) + 2 e‾"], "Z7G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z8G": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X1H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X2H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X3H": ["No reaction", "No reaction"], "X4H": ["No reaction", "No reaction"], "X5H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "X6H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X7H": ["No reaction", "No reaction"], "X8H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Y1H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y2H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y3H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "2 Br‾(aq) → Br₂(aq) +2 e‾"], "Y4H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y5H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "Y6H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Y7H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Y8H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z1H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Z2H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z3H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "2 Br‾(aq) → Br₂(aq) +2 e‾"], "Z4H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Z5H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z6H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Pb(s) → Pb²⁺(aq) + 2 e‾"], "Z7H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z8H": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X1E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X2E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X3E": ["No reaction", "No reaction"], "X4E": ["No reaction", "No reaction"], "X5E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "X6E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X7E": ["No reaction", "No reaction"], "X8E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Y1E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y2E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y3E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "2 Cl‾(l) → Cl₂(l) +2 e‾"], "Y4E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y5E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "Y6E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Y7E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Y8E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z1E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Z2E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z3E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "2 Cl‾(l) → Cl₂(l) +2 e‾"], "Z4E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Z5E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z6E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Pb(s) → Pb²⁺(aq) + 2 e‾"], "Z7E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z8E": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X1A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X2A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X3A": ["No reaction", "No reaction"], "X4A": ["No reaction", "No reaction"], "X5A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "X6A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X7A": ["No reaction", "No reaction"], "X8A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Y1A": ["Cu²⁺(aq) + 2e‾ → Cu(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y2A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y3A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾"], "Y4A": ["Cu²⁺(aq) + 2e‾ → Cu(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y5A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "Y6A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Y7A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Ag(s) → Ag⁺(aq) + e‾"], "Y8A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z1A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Z2A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Ag(s) → Ag⁺(aq) + e‾"], "Z3A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾"], "Z4A": ["Cu²⁺(aq) + 2e‾ → Cu(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Z5A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z6A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Pb(s) → Pb²⁺(aq) + 2 e‾"], "Z7A": ["Cu²⁺(aq) + 2 e‾ → Cu(s)", "Ag(s) → Ag⁺(aq) + e‾"], "Z8A": ["Cu²⁺(aq) + 2e‾ → Cu(s)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X1F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X2F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "X3F": ["No reaction", "No reaction"], "X4F": ["No reaction", "No reaction"], "X5F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "X6F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "X7F": ["No reaction", "No reaction"], "X8F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Y1F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y2F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y3F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾"], "Y4F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Y5F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Mg(s) → Mg²⁺(aq) + 2 e‾"], "Y6F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Y7F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Y8F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z1F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Zn(s) →  Zn²⁺(aq) + 2 e‾"], "Z2F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z3F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾"], "Z4F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"], "Z5F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Fe(s) → Fe²⁺(aq) + 2 e‾"], "Z6F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Pb(s) → Pb²⁺(aq) + 2 e‾"], "Z7F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Ag(s) → Ag⁺(aq) + e‾"], "Z8F": ["2 H⁺(aq) + 2 e‾ → H₂(g)", "Cu(s) → Cu²⁺(aq) + 2 e‾"]};
     
-    const cards = {
-        top: { 'X': '11wEFvXwfLzBZ1SgOGQlsHyB5wU45g33U', 'Y': '1styWSAwquPiUu1qumygk2sd6rhHxk9Vp', 'Z': '1Fm0QekVp8wiijZmBI4WhyWj94oadYuXW' },
-        mid: { '1': '1h8k3HrKtKo2W4EOA_w4FkwLGaGfa3UE-', '2': '152FmHKjXnaNwHyCtd6SNHRn5LjkQsKTY', '3': '1BZS6WaUIqZQEOi88hOkttVpPmTOtzqRZ', '4': '1dSYunw9jRpDNUt80zrCFnZsDwsw-36KE', '5': '14vDs71B7g8xY4aYg8eFE01EbheLXHMEQ', '6': '1GMj1ys-LwEmj_fwrzFtHU8sm6BFfTjmI', '7': '1aT4NwcPrIoRzEpZ4jftC8rDXMUYDkuJi', '8': '10Hb_RvzM10iILU8t-uors7XKdrpB9w_a' },
-        bot: { 'A': '1pBjeNzI0o3YJH6ExcR_FItQa-U8Mst0r', 'B': '1OFc8M43SI8nnxe-ChyPYvNvc1XDYISO7', 'C': '1XqK1MsctReFIPuiQlJj4EtDGeScXEMuY', 'D': '1nQywDWt2gqVPCtJv4HgNp_--v2YiatgF', 'E': '1jM8GW3uZFhuNyeW6gfzZcvC6Rn-mLqIg', 'F': '1pCskQ9Kw8FnPbtNwDY0gmD53RNmR_8Df', 'G': '1rSolvIXevfppVDExA7oPYeuTqHNjTY9J', 'H': '1zyMKRT_AEYARRa1NToDzOV5_Sq77-Xh4' }
+    const cards = { top: {'X':'11wEFvXwfLzBZ1SgOGQlsHyB5wU45g33U','Y':'1styWSAwquPiUu1qumygk2sd6rhHxk9Vp','Z':'1Fm0QekVp8wiijZmBI4WhyWj94oadYuXW'}, mid: {'1':'1h8k3HrKtKo2W4EOA_w4FkwLGaGfa3UE-','2':'152FmHKjXnaNwHyCtd6SNHRn5LjkQsKTY','3':'1BZS6WaUIqZQEOi88hOkttVpPmTOtzqRZ','4':'1dSYunw9jRpDNUt80zrCFnZsDwsw-36KE','5':'14vDs71B7g8xY4aYg8eFE01EbheLXHMEQ','6':'1GMj1ys-LwEmj_fwrzFtHU8sm6BFfTjmI','7':'1aT4NwcPrIoRzEpZ4jftC8rDXMUYDkuJi','8':'10Hb_RvzM10iILU8t-uors7XKdrpB9w_a'}, bot: {'A':'1pBjeNzI0o3YJH6ExcR_FItQa-U8Mst0r','B':'1OFc8M43SI8nnxe-ChyPYvNvc1XDYISO7','C':'1XqK1MsctReFIPuiQlJj4EtDGeScXEMuY','D':'1nQywDWt2gqVPCtJv4HgNp_--v2YiatgF','E':'1jM8GW3uZFhuNyeW6gfzZcvC6Rn-mLqIg','F':'1pCskQ9Kw8FnPbtNwDY0gmD53RNmR_8Df','G':'1rSolvIXevfppVDExA7oPYeuTqHNjTY9J','H':'1zyMKRT_AEYARRa1NToDzOV5_Sq77-Xh4'}};
+
+    const cPool = Array.from(new Set(Object.values(masterData).map(v => v[0]))).filter(x => x !== "No reaction");
+    const aPool = Array.from(new Set(Object.values(masterData).map(v => v[1]))).filter(x => x !== "No reaction");
+
+    const hints = [
+        "Galvanic cells produce electricity. Electrolytic cells require a battery.",
+        "Cathode: Reduction occurs. In aqueous solutions, least reactive cations discharge.",
+        "Anode: Oxidation occurs. If electrode is reactive metal, it oxidises first."
+    ];
+
+    let current = { code: "", cathode: "", anode: "", type: "", hintUsed: false };
+    let gameState = { 
+        mode: 'normal', 
+        score: 0, 
+        timer: 60, 
+        interval: null, 
+        usedCodes: new Set(), 
+        isMuted: false,
+        streak: 0,
+        multiplier: 1
     };
 
-    // Clean pools for distractors (unique and trimmed)
-    const cPool = Array.from(new Set(Object.values(masterData).map(v => v[0].trim()))).filter(x => x !== "No reaction");
-    const aPool = Array.from(new Set(Object.values(masterData).map(v => v[1].trim()))).filter(x => x !== "No reaction");
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    let current = { code: "", cathode: "", anode: "", type: "" };
-    let challengeState = { active: false, questionNum: 0, score: 0 };
-
-    const AudioEngine = {
-        ctx: null,
-        bgMusic: null,
-        init() { 
-            if (!this.ctx) {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                this.bgMusic = document.getElementById('bgMusic');
-            }
-        },
-        startMusic() {
-            this.init();
-            this.bgMusic.play().catch(e => console.log("Music play blocked by browser until interaction."));
-        },
-        stopMusic() {
-            if (this.bgMusic) this.bgMusic.pause();
-        },
-        playDing() { this.init(); const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1046.50, this.ctx.currentTime + 0.1); gain.gain.setValueAtTime(0, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + 0.05); gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.5); },
-        playZap() { this.init(); const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.2); gain.gain.setValueAtTime(0.1, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.2); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.2); },
-        playFanfare() { this.init(); const now = this.ctx.currentTime; const notes = [523.25, 659.25, 783.99, 1046.50]; notes.forEach((freq, i) => { const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, now + (i * 0.15)); gain.gain.setValueAtTime(0, now + (i * 0.15)); gain.gain.linearRampToValueAtTime(0.2, now + (i * 0.15) + 0.05); gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.15) + 0.8); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now + (i * 0.15)); osc.stop(now + (i * 0.15) + 0.8); }); }
-    };
-
-    function toggleMute() {
-        const music = document.getElementById('bgMusic');
-        const btn = document.getElementById('muteToggle');
-        if (music.muted) {
-            music.muted = false;
-            btn.innerText = "🎵 Mute";
-        } else {
-            music.muted = true;
-            btn.innerText = "🔇 Unmute";
-        }
+    function playDing() {
+        if(gameState.isMuted) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
     }
 
-    function resetApp() {
-        AudioEngine.stopMusic();
-        challengeState = { active: false, questionNum: 0, score: 0 };
-        document.getElementById('gameUI').style.display = 'none';
-        document.getElementById('finalScreen').style.display = 'none';
-        document.getElementById('statsBar').style.display = 'none';
-        document.getElementById('lookupView').style.display = 'none';
-        document.getElementById('finishActions').style.display = 'none';
-        document.getElementById('gen1').style.display = 'block';
-        document.getElementById('gen1').className = 'gen-question active';
-        document.getElementById('gen2').style.display = 'none';
-        document.getElementById('gen2').className = 'gen-question';
-        document.getElementById('gen3').style.display = 'none';
-        document.getElementById('gen3').className = 'gen-question';
-        document.querySelectorAll('.gen-btn').forEach(btn => {
-            btn.disabled = false;
-            btn.classList.remove('correct-choice', 'wrong-choice');
+    function playZap() {
+        if(gameState.isMuted) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(55, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+    }
+
+    function playFanfare() {
+        if(gameState.isMuted) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime + (i * 0.1));
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime + (i * 0.1));
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.1) + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime + (i * 0.1));
+            osc.stop(audioCtx.currentTime + (i * 0.1) + 0.4);
         });
-        document.getElementById('startScreen').style.display = 'block';
-        document.getElementById('topNav').style.display = 'flex';
-        document.getElementById('mainHeader').innerHTML = `Electrochemistry Assistant`;
     }
 
-    function startChallenge() {
-        AudioEngine.startMusic();
-        document.getElementById('mainHeader').innerHTML = `Electrochemical Game <span class="credits">designed by Ms Khoo Xiang Yun and Mr Jansen Tan</span>`;
+    window.onload = () => {
+        if (localStorage.getItem('electro_unlocked') === 'true') {
+            document.getElementById('speedRunBtn').style.display = 'block';
+            document.getElementById('unlockMsg').innerText = "Speed Run is Unlocked! Prove your mastery!";
+        }
+    };
+
+    function toggleMute() { 
+        gameState.isMuted = !gameState.isMuted;
+        document.getElementById('audioNormal').muted = gameState.isMuted;
+        document.getElementById('audioSpeed').muted = gameState.isMuted;
+        document.getElementById('muteToggle').innerText = gameState.isMuted ? '🔇 Audio: OFF' : '🎵 Audio: ON';
+    }
+
+    function resetToMenu() {
+        location.reload();
+    }
+
+    function startChallenge(mode) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const normalTrack = document.getElementById('audioNormal');
+        const speedTrack = document.getElementById('audioSpeed');
+        
+        normalTrack.pause(); speedTrack.pause();
+        if (mode === 'speed') speedTrack.play().catch(()=>{});
+        else normalTrack.play().catch(()=>{});
+
         document.getElementById('startScreen').style.display = 'none';
         document.getElementById('topNav').style.display = 'none';
-        challengeState.active = true;
-        challengeState.questionNum = 1;
-        challengeState.score = 0;
         document.getElementById('statsBar').style.display = 'flex';
         document.getElementById('gameUI').style.display = 'flex';
         document.getElementById('quizView').style.display = 'block';
+        document.getElementById('refereeView').style.display = 'none';
+        
+        gameState.mode = mode;
+        gameState.score = 0;
+        gameState.questionCount = 1;
+        gameState.usedCodes.clear();
+        gameState.streak = 0;
+        gameState.multiplier = 1;
+
+        if (mode === 'speed') {
+            document.getElementById('timerContainer').style.display = 'block';
+            document.getElementById('multiplierBadge').style.display = 'inline-block';
+            startTimer();
+        } else {
+            document.getElementById('multiplierBadge').style.display = 'none';
+        }
         nextQuestion();
     }
 
-    function toggleHint(step) {
-        const box = document.getElementById('hint' + step);
-        box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+    function startTimer() {
+        gameState.timer = 60;
+        const bar = document.getElementById('timerBar');
+        gameState.interval = setInterval(() => {
+            gameState.timer -= 0.1;
+            bar.style.width = (gameState.timer / 60 * 100) + '%';
+            if (gameState.timer <= 0) endGame();
+        }, 100);
     }
 
     function nextQuestion() {
-        document.getElementById('progressText').innerText = `Question ${challengeState.questionNum} of 5`;
-        document.getElementById('scoreText').innerText = `Score: ${challengeState.score}`;
-        const tKeys=['X','Y','Z'], mKeys=['1','2','3','4','5','6','7','8'], bKeys=['A','B','C','D','E','F','G','H'];
-        let code;
-        do {
-            code = tKeys[Math.floor(Math.random()*3)] + mKeys[Math.floor(Math.random()*8)] + bKeys[Math.floor(Math.random()*8)];
-        } while (masterData[code][0] === "No reaction");
-        setupData(code);
-        setupQuizButtons();
+        current.hintUsed = false;
+        document.getElementById('progressText').innerText = gameState.mode === 'speed' ? `Solving Questions...` : `Question ${gameState.questionCount}`;
+        updateScoreUI();
+        
+        const allKeys = Object.keys(masterData).filter(k => masterData[k][0] !== "No reaction" && !gameState.usedCodes.has(k));
+        if (allKeys.length === 0) return endGame();
+        
+        const code = allKeys[Math.floor(Math.random() * allKeys.length)];
+        gameState.usedCodes.add(code);
+        
+        loadSpecificCode(code);
     }
 
-    function handleLookup() {
-        const code = document.getElementById('manualInput').value.toUpperCase().trim();
-        if (!masterData[code]) { alert("Invalid Code."); return; }
-        document.getElementById('startScreen').style.display = 'none';
-        document.getElementById('topNav').style.display = 'none';
-        setupData(code);
-        document.getElementById('gameUI').style.display = 'flex';
-        document.getElementById('quizView').style.display = 'none';
-        document.getElementById('lookupView').style.display = 'block';
-        document.getElementById('keyType').innerText = current.type;
-        document.getElementById('keyCathode').innerText = current.cathode;
-        document.getElementById('keyAnode').innerText = current.anode;
-    }
-
-    function setupData(code) {
+    function loadSpecificCode(code) {
         current.code = code;
         current.type = (code[0] === 'X') ? 'Galvanic' : 'Electrolytic';
         current.cathode = masterData[code][0];
         current.anode = masterData[code][1];
-        const proxyBase = "https://lh3.googleusercontent.com/u/0/d/";
-        document.getElementById('imgTop').src = proxyBase + cards.top[code[0]];
-        document.getElementById('imgMid').src = proxyBase + cards.mid[code[1]];
-        document.getElementById('imgBot').src = proxyBase + cards.bot[code[2]];
+
+        const base = "https://lh3.googleusercontent.com/u/0/d/";
+        document.getElementById('imgTop').src = base + cards.top[code[0]];
+        document.getElementById('imgMid').src = base + cards.mid[code[1]];
+        document.getElementById('imgBot').src = base + cards.bot[code[2]];
+
+        if (gameState.mode === 'referee') {
+            displayRefereeResults();
+        } else {
+            setupQuizButtons();
+        }
+    }
+
+    function displayRefereeResults() {
+        document.getElementById('quizView').style.display = 'none';
+        document.getElementById('refereeView').style.display = 'block';
+        document.getElementById('refType').innerText = current.type;
+        document.getElementById('refCathode').innerText = current.cathode;
+        document.getElementById('refAnode').innerText = current.anode;
+        document.getElementById('refInput').value = "";
+        playDing();
     }
 
     function setupQuizButtons() {
-        const currentC = current.cathode.trim();
-        const currentA = current.anode.trim();
+        // Step 1: Identification
+        const typeGrid = document.getElementById('typeOptions');
+        typeGrid.innerHTML = `
+            <button class="choice" onclick="check(1, 'Galvanic', event)">Galvanic (Simple Cell)</button>
+            <button class="choice" onclick="check(1, 'Electrolytic', event)">Electrolytic (Battery)</button>
+        `;
+
+        // Step 2: Cathode
+        const cOpts = shuffle([current.cathode, ...shuffle(cPool.filter(x => x !== current.cathode)).slice(0, 3)]);
+        const cathodeGrid = document.getElementById('cathodeOptions');
+        cathodeGrid.innerHTML = cOpts.map(o => `<button class="choice" onclick="check(2, '${o}', event)">${o}</button>`).join('');
         
-        // Common required foils (but must be unique)
-        const commonC = "2 H⁺(aq) + 2 e‾ → H₂(g)";
-        const commonA = "4 OH‾(aq) → 2 H₂O(l) + O₂(g) +4 e‾";
+        // Step 3: Anode
+        const aOpts = shuffle([current.anode, ...shuffle(aPool.filter(x => x !== current.anode)).slice(0, 3)]);
+        const anodeGrid = document.getElementById('anodeOptions');
+        anodeGrid.innerHTML = aOpts.map(o => `<button class="choice" onclick="check(3, '${o}', event)">${o}</button>`).join('');
 
-        // Create Unique Cathode Set
-        let cSet = new Set([currentC]);
-        if (currentC !== commonC) cSet.add(commonC);
-        
-        let filteredDistractorsC = shuffle(cPool.filter(x => !cSet.has(x.trim())));
-        while (cSet.size < 4 && filteredDistractorsC.length > 0) {
-            cSet.add(filteredDistractorsC.pop().trim());
-        }
-
-        // Create Unique Anode Set
-        let aSet = new Set([currentA]);
-        if (currentA !== commonA) aSet.add(commonA);
-
-        let filteredDistractorsA = shuffle(aPool.filter(x => !aSet.has(x.trim())));
-        while (aSet.size < 4 && filteredDistractorsA.length > 0) {
-            aSet.add(filteredDistractorsA.pop().trim());
-        }
-
-        document.getElementById('cathodeOptions').innerHTML = shuffle(Array.from(cSet)).map(o => `<button class="choice" onclick="check(2, '${o}')">${o}</button>`).join('');
-        document.getElementById('anodeOptions').innerHTML = shuffle(Array.from(aSet)).map(o => `<button class="choice" onclick="check(3, '${o}')">${o}</button>`).join('');
-        
         for(let i=1; i<=3; i++) {
             document.getElementById('step'+i).style.display = (i===1) ? 'block' : 'none';
             document.getElementById('feed'+i).style.display = 'none';
-            document.getElementById('hint'+i).style.display = 'none';
+            document.getElementById('hintText'+i).style.display = 'none';
+            document.getElementById('btnHint'+i).style.display = 'inline-block';
         }
     }
 
-    function check(step, val) {
-        const feed = document.getElementById('feed'+step);
-        let isCorrect = (step === 1) ? (val === current.type) : 
-                        (step === 2) ? (val.trim() === current.cathode.trim()) : 
-                        (val.trim() === current.anode.trim());
+    function showHint(step) {
+        current.hintUsed = true;
+        if(gameState.mode === 'speed') {
+            gameState.multiplier = 1;
+            gameState.streak = 0;
+            updateScoreUI();
+        }
+        const hintDisplay = document.getElementById('hintText' + step);
+        const hintBtn = document.getElementById('btnHint' + step);
+        hintDisplay.innerText = hints[step - 1];
+        hintDisplay.style.display = 'block';
+        hintBtn.style.display = 'none';
+    }
 
-        feed.style.display = 'block';
+    function check(step, val, event) {
+        const isCorrect = (step === 1) ? (val === current.type) : (step === 2) ? (val === current.cathode) : (val === current.anode);
+        
         if (isCorrect) {
-            AudioEngine.playDing();
-            feed.className = "feedback correct"; feed.innerText = "✅ Correct!";
-            if(step < 3) { 
-                setTimeout(() => document.getElementById('step'+(step+1)).style.display = 'block', 600); 
-            } else {
-                challengeState.score++;
-                document.getElementById('scoreText').innerText = `Score: ${challengeState.score}`;
-                setTimeout(() => {
-                    if (challengeState.questionNum < 5) { challengeState.questionNum++; nextQuestion(); } 
-                    else { showFinalResults(); }
-                }, 1000);
+            playDing();
+            
+            // Clean up UI for the current step
+            const gridId = (step === 1) ? 'typeOptions' : (step === 2) ? 'cathodeOptions' : 'anodeOptions';
+            const grid = document.getElementById(gridId);
+            const displayVal = (step === 1) ? (val === 'Galvanic' ? 'Galvanic (Simple Cell)' : 'Electrolytic (Battery)') : val;
+            
+            // Lock UI: Remove all distractors, replace with a single "confirmed" button
+            grid.innerHTML = `<button class="choice confirmed">${displayVal}</button>`;
+            
+            // Hide hint button and hint text to save space
+            document.getElementById('btnHint'+step).style.display = 'none';
+            document.getElementById('hintText'+step).style.display = 'none';
+
+            if(gameState.mode === 'speed') {
+                const earned = 100 * gameState.multiplier;
+                gameState.score += earned;
+                gameState.streak++;
+                gameState.multiplier = 1 + Math.floor(gameState.streak / 3);
+                showFloatingScore(event.clientX, event.clientY, `+${earned}`);
+                updateScoreUI();
             }
-        } else { 
-            AudioEngine.playZap();
-            feed.className = "feedback wrong"; feed.innerText = "❌ Incorrect. Try again or check the hint!"; 
-        }
-    }
 
-    function showFinalResults() {
-        document.getElementById('quizView').style.display = 'none';
-        document.getElementById('finalScreen').style.display = 'block';
-        document.getElementById('finalScoreDisplay').innerText = `Final Score: ${challengeState.score} / 5`;
-        if (challengeState.score === 5) AudioEngine.playFanfare();
-    }
-
-    function checkGen(num, isCorrect, btn) {
-        const options = btn.parentElement.querySelectorAll('.gen-btn');
-        options.forEach(b => b.disabled = true);
-        if (isCorrect) {
-            AudioEngine.playDing();
-            btn.classList.add('correct-choice');
-            const card = document.getElementById('gen'+num);
-            card.classList.remove('active'); card.classList.add('passed');
-            if (num < 3) {
-                setTimeout(() => { const next = document.getElementById('gen'+(num+1)); next.style.display = 'block'; next.classList.add('active'); }, 800);
+            if (step < 3) {
+                const nextStep = document.getElementById('step'+(step+1));
+                nextStep.style.display = 'block';
+                // Small scroll to ensure next step is visible if layout is tight
+                nextStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
-                setTimeout(() => { document.getElementById('finishActions').style.display = 'block'; }, 800);
+                if (gameState.mode === 'normal' && !current.hintUsed) gameState.score++;
+                if (gameState.mode === 'normal' && gameState.questionCount >= 5) {
+                    localStorage.setItem('electro_unlocked', 'true');
+                    endGame();
+                } else {
+                    if (gameState.mode !== 'speed') gameState.questionCount++;
+                    setTimeout(nextQuestion, 600);
+                }
             }
         } else {
-            AudioEngine.playZap();
-            btn.classList.add('wrong-choice');
-            setTimeout(() => { btn.classList.remove('wrong-choice'); options.forEach(b => b.disabled = false); }, 1000);
+            playZap();
+            if(gameState.mode === 'speed') {
+                gameState.streak = 0;
+                gameState.multiplier = 1;
+                updateScoreUI();
+            }
+            showWrongModal(step);
         }
     }
 
-    function shuffle(arr) { return arr.sort(() => 0.5 - Math.random()); }
+    function updateScoreUI() {
+        document.getElementById('scoreText').innerText = `Score: ${gameState.score}`;
+        const badge = document.getElementById('multiplierBadge');
+        badge.innerText = `x${gameState.multiplier}`;
+        badge.style.display = (gameState.multiplier > 1) ? 'inline-block' : 'none';
+    }
+
+    function showFloatingScore(x, y, text) {
+        const div = document.createElement('div');
+        div.className = 'floating-score';
+        div.innerText = text;
+        div.style.left = x + 'px';
+        div.style.top = y + 'px';
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 800);
+    }
+
+    function showWrongModal(step) {
+        const modal = document.getElementById('modalOverlay');
+        const msg = document.getElementById('modalMsg');
+        const hint = document.getElementById('modalHint');
+        let correctVal = (step === 1) ? current.type : (step === 2) ? current.cathode : current.anode;
+        if (step === 1) correctVal = (correctVal === 'Galvanic' ? 'Galvanic (Simple Cell)' : 'Electrolytic (Battery)');
+        
+        msg.innerHTML = `The correct answer was:<br><strong>${correctVal}</strong>`;
+        hint.innerHTML = `<strong>Concept Tip:</strong><br>${hints[step-1]}`;
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').style.display = 'none';
+        if (gameState.mode === 'normal' && gameState.questionCount >= 5) {
+            localStorage.setItem('electro_unlocked', 'true');
+            endGame();
+        } else {
+            if (gameState.mode !== 'speed') gameState.questionCount++;
+            nextQuestion();
+        }
+    }
+
+    function endGame() {
+        clearInterval(gameState.interval);
+        document.getElementById('audioNormal').pause();
+        document.getElementById('audioSpeed').pause();
+        playFanfare();
+        document.getElementById('quizView').style.display = 'none';
+        document.getElementById('timerContainer').style.display = 'none';
+        document.getElementById('finalScreen').style.display = 'block';
+        document.getElementById('finalScoreDisplay').innerText = `Final Score: ${gameState.score}`;
+        document.getElementById('finalTitle').innerText = (gameState.mode === 'speed') ? "Time's Up!" : "Challenge Complete!";
+        
+        if(gameState.mode === 'speed') {
+            document.getElementById('finalStats').innerHTML = `You solved many steps with a max multiplier of <strong>x${gameState.multiplier}</strong>!`;
+        } else {
+            document.getElementById('finalStats').innerHTML = `You scored <strong>${gameState.score}/5</strong> on the challenge.`;
+        }
+    }
+
+    function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
+    
+    function handleLookup(passedCode = null) {
+        const code = (passedCode || document.getElementById('manualInput').value).toUpperCase();
+        if(!masterData[code] || masterData[code][0] === "No reaction") return;
+
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        document.getElementById('audioNormal').play().catch(()=>{});
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('topNav').style.display = 'none';
+        document.getElementById('statsBar').style.display = 'flex';
+        document.getElementById('gameUI').style.display = 'flex';
+        
+        gameState.mode = 'referee';
+        document.getElementById('progressText').innerText = `Referee: ${code}`;
+        document.getElementById('scoreText').innerText = "Verified Solution";
+        loadSpecificCode(code);
+    }
 </script>
 </body>
 </html>
